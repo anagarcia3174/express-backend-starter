@@ -11,7 +11,7 @@ router.post('/register', authLimiter,registerValidation, validate, register);
 router.post('/login', authLimiter, loginValidation, validate, login);
 
 //This is called when user clicks logout button on frontend
-router.get('/logout', logout);
+router.post('/logout', logout);
 
 
 

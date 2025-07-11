@@ -5,6 +5,6 @@ import { tokenRefreshLimiter } from '../middleware/rate-limiter.middleware';
 const router = Router();
 
 //If refresh token is valid, user recieves new access and refresh tokens
-router.get('/refreshToken', tokenRefreshLimiter, refreshToken);
+router.post('/refresh-token', tokenRefreshLimiter, refreshToken);
 
 export default router;

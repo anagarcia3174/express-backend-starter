@@ -29,7 +29,8 @@ export enum ErrorCode {
   // Server errors
   SERVER_ERROR = 'server-error',
   DATABASE_ERROR = 'database-error',
-  TOO_MANY_REQUESTS = 'too-many-requests'
+  TOO_MANY_REQUESTS = 'too-many-requests',
+  NOT_FOUND = 'not-found',
 }
 
 class AppError extends Error {

@@ -12,7 +12,7 @@ const router = Router();
 router.get('/verify-email', verificationLimiter, queryTokenValidation, validate ,verifyEmail);
 
 //If access token is valid, user can resend their verification email
-router.get('/resend-verification', resendVerificationLimiter, verifyToken, resendVerification);
+router.post('/resend-verification', resendVerificationLimiter, verifyToken, resendVerification);
 
 
 export default router;

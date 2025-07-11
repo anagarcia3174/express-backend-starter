@@ -79,11 +79,11 @@ npm start
 ### Authentication
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login
-- `GET /api/auth/logout` - User logout
+- `POST /api/auth/logout` - User logout
 
 ### Email
 - `GET /api/email/verify-email` - Verification link
-- `GET /api/email/resend-verification` - Resend verification email link
+- `POST /api/email/resend-verification` - Resend verification email link
 
 ### Password Reset
 - `POST /api/password/change-password` - Change password with token and current password
@@ -146,3 +146,7 @@ This template provides a solid foundation for building APIs with:
 - Security best practices
 
 Simply modify the controllers, models, and routes to fit your specific use case.
+
+## API Documentation
+
+For detailed API documentation including endpoints, request/response examples, and user flows, see [API.md](API.md).

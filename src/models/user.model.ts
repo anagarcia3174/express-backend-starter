@@ -30,6 +30,7 @@ const UserSchema = new mongoose.Schema<IUserDocument, IUserModel>({
 
 
 UserSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean>{
+  if(!candidatePassword) return false;
     return await bcrypt.compare(candidatePassword, this.password);
 }
 

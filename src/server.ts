@@ -1,49 +1,41 @@
-import express from "express";
-import { config } from "./config/config";
-import { connectDB } from "./utils/db-connection.util";
-import cors from "cors";
-import { errorHandler } from "./middleware/error-handler.middleware";
-import authRoutes from "./routes/auth.route";
-import emailRoutes from "./routes/email.route";
-import passwordRoutes from "./routes/password.route";
-import tokenRoutes from "./routes/token.route";
-import cookieParser from "cookie-parser";
-import path from "path";
+import mongoose from "mongoose";
 import { logger } from "./utils/logger.util";
+import app from "./app";
+import { config } from "./config/config";
+import { Server } from "http";
+import { mongoConfig } from "./config/mongo.config";
 
-connectDB();
+let server: Server;
 
-const app = express();
-const port = config.port || 3000;
-
-
-app.use(express.json({ limit: "10kb" }));
-app.use(express.urlencoded({ extended: true, limit: "10kb" }));
-
-
-// Other Middleware
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
-app.use(
-  cors({
-    credentials: true,
-    origin: config.clientUrl || "http://localhost:3000",
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+mongoose.connect(mongoConfig.url).then(() => {
+  logger.info("Conected to MongoDB");
+  server = app.listen(config.port, () => {
+    logger.info(`Server is running on port ${config.port}`);
   })
-);
-app.use(cookieParser());
+})
 
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/email", emailRoutes);
-app.use("/api/password", passwordRoutes);
-app.use("/api/token", tokenRoutes);
+const exitHandler = () => {
+  if (server) {
+    server.close(() => {
+      logger.info('Server closed');
+      process.exit(1);
+    });
+  } else {
+    process.exit(1);
+  }
+};
 
-// Error handling
-app.use(errorHandler);
+const unexpectedErrorHandler = (error: unknown) => {
+  logger.error(error);
+  exitHandler();
+};
 
-// Start server
-app.listen(port, () => {
-  logger.info(`Server is running on port ${port}`);
+process.on('uncaughtException', unexpectedErrorHandler);
+process.on('unhandledRejection', unexpectedErrorHandler);
+
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received');
+  if (server) {
+    server.close();
+  }
 });
