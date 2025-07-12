@@ -43,18 +43,18 @@ export const changePasswordValidation = [
 
   body('newPassword')
     .isLength({ min: 6 })
-    .withMessage(ErrorCode.INVALID_PASSWORD_LETTER)
+    .withMessage(ErrorCode.INVALID_PASSWORD_LENGTH)
     .matches(/\d/)
     .withMessage(ErrorCode.INVALID_PASSWORD_NUMBER)
     .matches(/[a-zA-Z]/)
     .withMessage(ErrorCode.INVALID_PASSWORD_LETTER)
     .custom((value, { req }) => {
       if (value === req.body.currentPassword) {
-        throw new Error('new-password-same');
+        throw new Error(ErrorCode.NEW_PASSWORD_SAME);
       }
       return true;
     })
-    .withMessage(ErrorCode.INVALID_PASSWORD)
+    .withMessage(ErrorCode.NEW_PASSWORD_SAME)
 ]; 
 
 export const forgotPasswordValidation = [
@@ -68,14 +68,14 @@ export const forgotPasswordValidation = [
 export const resetPasswordValidation = [
   body('token')
     .notEmpty()
-    .withMessage('Reset token is required'),
+    .withMessage(ErrorCode.MISSING_TOKEN),
   body('password')
   .isLength({ min: 6 })
-  .withMessage('Password must be at least 6 characters long')
+  .withMessage(ErrorCode.INVALID_PASSWORD_LENGTH)
   .matches(/\d/)
-  .withMessage('Password must contain at least one number')
+  .withMessage(ErrorCode.INVALID_PASSWORD_NUMBER)
   .matches(/[a-zA-Z]/)
-  .withMessage('Password must contain at least one letter')
+  .withMessage(ErrorCode.INVALID_PASSWORD_LETTER)
 ];
 
 export const queryTokenValidation = [

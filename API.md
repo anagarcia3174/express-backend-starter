@@ -26,35 +26,34 @@ Authorization: Bearer <access_token>
 ## Rate Limiting
 
 - **Auth endpoints**: 5 requests per 15 minutes per IP
-- **Email endpoints**: 3 requests per 15 minutes per IP  
-- **Password endpoints**: 3 requests per 15 minutes per IP
-- **Token endpoints**: 5 requests per 15 minutes per IP
+- **Account endpoints**: 3 requests per 15 minutes per IP
+- **Token refresh**: 5 requests per 15 minutes per IP
 
 ## User Journey Flows
 
 ### 1. New User Registration → Email Verification
 ```
-POST /auth/register → GET /email/verify-email → POST /auth/login
+POST /auth/register → GET /account/verify-email → POST /auth/login
 ```
 
 ### 2. Existing User Login → Normal Usage
 ```
-POST /auth/login → POST /token/refresh-token (as needed) → POST /auth/logout
+POST /auth/login → POST /auth/refresh (as needed) → POST /auth/logout
 ```
 
 ### 3. Password Reset Flow
 ```
-POST /password/forgot-password → GET /password/reset-password → POST /password/reset-password → POST /auth/login
+POST /account/forgot-password → GET /account/reset-password → POST /account/reset-password → POST /auth/login
 ```
 
 ### 4. Change Password (Logged In)
 ```
-POST /auth/login → POST /password/change-password → POST /auth/logout
+POST /auth/login → POST /account/change-password → POST /auth/logout
 ```
 
 ### 5. Resend Email Verification
 ```
-POST /auth/login → POST /email/resend-verification → GET /email/verify-email
+POST /auth/login → POST /account/resend-verification → GET /account/verify-email
 ```
 
 ---
@@ -72,25 +71,22 @@ Creates a new user account and sends email verification.
 {
   "email": "user@example.com",
   "password": "Password123!",
-  "name": "John Doe"
+  "username": "johndoe"
 }
 ```
 
 **Response (201):**
 ```json
 {
-  "success": true,
-  "message": "User registered successfully. Please verify your email.",
+  "status": "success",
   "data": {
-    "user": {
-      "id": "userId",
-      "email": "user@example.com",
-      "name": "John Doe",
-      "isVerified": false
-    }
+    "userId": "userId",
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
+
+**Note:** Refresh token is automatically set as httpOnly cookie.
 
 **cURL Example:**
 ```bash
@@ -120,22 +116,15 @@ Authenticates user and returns JWT tokens.
 **Response (200):**
 ```json
 {
-  "success": true,
-  "message": "Login successful",
+  "status": "success",
   "data": {
-    "user": {
-      "id": "userId",
-      "email": "user@example.com",
-      "name": "John Doe",
-      "isVerified": true
-    },
-    "tokens": {
-      "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-      "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-    }
+    "userId": "userId",
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
+
+**Note:** Refresh token is automatically set as httpOnly cookie.
 
 **cURL Example:**
 ```bash
@@ -156,12 +145,9 @@ Invalidates user's refresh token and logs them out.
 **Headers:**
 - `Authorization: Bearer <access_token>`
 
-**Response (200):**
-```json
-{
-  "success": true,
-  "message": "Logout successful"
-}
+**Response (204):**
+```
+No content
 ```
 
 **cURL Example:**
@@ -170,13 +156,38 @@ curl -X POST http://localhost:3000/api/auth/logout \
   -H "Authorization: Bearer <access_token>"
 ```
 
+### Refresh Token
+
+**`POST /auth/refresh`**
+
+Generates new access and refresh tokens using refresh token from cookie.
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "data": {
+    "userId": "userId",
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+}
+```
+
+**Note:** New refresh token is automatically set as httpOnly cookie.
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/auth/refresh \
+  -H "Cookie: jwt=<refresh_token>"
+```
+
 ---
 
-## Email Endpoints
+## Account Endpoints
 
 ### Verify Email
 
-**`GET /email/verify-email`**
+**`GET /account/verify-email`**
 
 Verifies user's email address via token from email link.
 
@@ -184,21 +195,18 @@ Verifies user's email address via token from email link.
 - `token` (required): Email verification token
 
 **Response (200):**
-```json
-{
-  "success": true,
-  "message": "Email verified successfully"
-}
+```html
+<!-- HTML success page -->
 ```
 
 **cURL Example:**
 ```bash
-curl "http://localhost:3000/api/email/verify-email?token=<verification_token>"
+curl "http://localhost:3000/api/account/verify-email?token=<verification_token>"
 ```
 
 ### Resend Verification Email
 
-**`POST /email/resend-verification`**
+**`POST /account/resend-verification`**
 
 Sends a new email verification link to user.
 
@@ -208,24 +216,22 @@ Sends a new email verification link to user.
 **Response (200):**
 ```json
 {
-  "success": true,
-  "message": "Verification email sent successfully"
+  "status": "success",
+  "data": {
+    "message": "Verification email sent successfully"
+  }
 }
 ```
 
 **cURL Example:**
 ```bash
-curl -X POST http://localhost:3000/api/email/resend-verification \
+curl -X POST http://localhost:3000/api/account/resend-verification \
   -H "Authorization: Bearer <access_token>"
 ```
 
----
-
-## Password Endpoints
-
 ### Change Password
 
-**`POST /password/change-password`**
+**`POST /account/change-password`**
 
 Changes user's password (requires current password).
 
@@ -243,14 +249,16 @@ Changes user's password (requires current password).
 **Response (200):**
 ```json
 {
-  "success": true,
-  "message": "Password changed successfully"
+  "status": "success",
+  "data": {
+    "message": "Password changed successfully"
+  }
 }
 ```
 
 **cURL Example:**
 ```bash
-curl -X POST http://localhost:3000/api/password/change-password \
+curl -X POST http://localhost:3000/api/account/change-password \
   -H "Authorization: Bearer <access_token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -261,7 +269,7 @@ curl -X POST http://localhost:3000/api/password/change-password \
 
 ### Forgot Password
 
-**`POST /password/forgot-password`**
+**`POST /account/forgot-password`**
 
 Sends password reset email to user.
 
@@ -275,14 +283,16 @@ Sends password reset email to user.
 **Response (200):**
 ```json
 {
-  "success": true,
-  "message": "Password reset email sent successfully"
+  "status": "success",
+  "data": {
+    "message": "Password reset email sent successfully"
+  }
 }
 ```
 
 **cURL Example:**
 ```bash
-curl -X POST http://localhost:3000/api/password/forgot-password \
+curl -X POST http://localhost:3000/api/account/forgot-password \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com"
@@ -291,7 +301,7 @@ curl -X POST http://localhost:3000/api/password/forgot-password \
 
 ### Show Reset Password Form
 
-**`GET /password/reset-password`**
+**`GET /account/reset-password`**
 
 Displays password reset form (typically renders HTML page).
 
@@ -305,12 +315,12 @@ Displays password reset form (typically renders HTML page).
 
 **cURL Example:**
 ```bash
-curl "http://localhost:3000/api/password/reset-password?token=<reset_token>"
+curl "http://localhost:3000/api/account/reset-password?token=<reset_token>"
 ```
 
 ### Reset Password
 
-**`POST /password/reset-password`**
+**`POST /account/reset-password`**
 
 Resets user's password using reset token.
 
@@ -327,57 +337,19 @@ Resets user's password using reset token.
 **Response (200):**
 ```json
 {
-  "success": true,
-  "message": "Password reset successfully"
-}
-```
-
-**cURL Example:**
-```bash
-curl -X POST "http://localhost:3000/api/password/reset-password?token=<reset_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "newPassword": "NewPassword123!"
-  }'
-```
-
----
-
-## Token Endpoints
-
-### Refresh Token
-
-**`POST /token/refresh-token`**
-
-Generates new access and refresh tokens using refresh token.
-
-**Request Body:**
-```json
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-**Response (200):**
-```json
-{
-  "success": true,
-  "message": "Tokens refreshed successfully",
+  "status": "success",
   "data": {
-    "tokens": {
-      "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-      "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-    }
+    "message": "Password reset successfully"
   }
 }
 ```
 
 **cURL Example:**
 ```bash
-curl -X POST http://localhost:3000/api/token/refresh-token \
+curl -X POST "http://localhost:3000/api/account/reset-password?token=<reset_token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "newPassword": "NewPassword123!"
   }'
 ```
 

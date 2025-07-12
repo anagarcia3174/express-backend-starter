@@ -21,19 +21,25 @@ src/
 ├── middleware/     # Custom middleware
 ├── models/         # Mongoose models
 ├── routes/         # API routes
-├── services/       # Business logic
+├── services/       # Business logic services
+│   ├── auth.service.ts     # Authentication logic
+│   ├── account.service.ts  # Account management logic
+│   ├── email.service.ts    # Email functionality
+│   └── user.service.ts     # User operations
 ├── types/          # TypeScript type definitions
 ├── utils/          # Utility functions
 ├── views/          # Email templates (EJS)
+├── app.ts          # Express app configuration
 └── server.ts       # Application entry point
 ```
 
 ## Features
 
-- **Authentication System:** Complete JWT-based auth with access/refresh tokens
+- **Authentication System:** Complete JWT-based auth with access/refresh tokens and middleware
+- **Service Layer Architecture:** Clean separation of business logic into dedicated services
 - **Email Service:** Email verification and password reset functionality
-- **User Management:** User registration, login, and profile management
-- **Security:** Rate limiting, input validation, and error handling
+- **Account Management:** Consolidated user profile, password, and email operations
+- **Security:** Rate limiting, input validation, JWT middleware, and error handling
 - **Email Templates:** Pre-built EJS templates for common email scenarios
 - **TypeScript:** Full TypeScript support with proper typing
 - **Logging:** Winston-based logging system
@@ -80,19 +86,15 @@ npm start
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login
 - `POST /api/auth/logout` - User logout
+- `POST /api/auth/refresh` - Refresh JWT tokens
 
-### Email
-- `GET /api/email/verify-email` - Verification link
-- `POST /api/email/resend-verification` - Resend verification email link
-
-### Password Reset
-- `POST /api/password/change-password` - Change password with token and current password
-- `POST /api/password/forgot-password` - Send reset password link
-- `GET /api/password/reset-password` - Open reset password link
-- `POST /api/password/reset-password` - Submit reset password form
-
-### Token Management
-- `POST /api/token/refresh-token` - Refresh JWT tokens
+### Account Management
+- `GET /api/account/verify-email` - Email verification via token
+- `POST /api/account/resend-verification` - Resend verification email
+- `POST /api/account/change-password` - Change password (requires current password)
+- `POST /api/account/forgot-password` - Send password reset email
+- `GET /api/account/reset-password` - Display password reset form
+- `POST /api/account/reset-password` - Reset password via token
 
 ## Security Features
 

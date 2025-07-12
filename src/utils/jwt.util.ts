@@ -107,3 +107,9 @@ export const verifyEmailVerificationToken = (token: string): TokenVerificationRe
 export const verifyPasswordResetToken = (token: string): TokenVerificationResult => {
   return verifyToken(token, config.resetPasswordTokenSecret);
 };
+
+export const createAuthTokens = (userId: string) => {
+  const accessToken = createAccessToken(userId);
+  const refreshToken = createRefreshToken(userId);
+  return { accessToken, refreshToken };
+}

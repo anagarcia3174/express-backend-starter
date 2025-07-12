@@ -1,20 +1,17 @@
 import { Request, Response, NextFunction } from "express";
-import {
-  addRefreshToken,
-  createUser,
-  getUserByEmail,
-  getUserByRefreshToken,
-  removeAllRefreshTokens,
-  removeRefreshToken,
-  getUserById,
-} from "../services/user.service";
 import { RegisterRequest, LoginRequest } from "../types/user.types";
-import { ApiResponse, AuthResponse, AuthStatusResponse } from "../types/api.types";
+import { ApiResponse, AuthResponse } from "../types/api.types";
 import { logger } from "../utils/logger.util";
 import AppError, { ErrorCode } from "../utils/app-error.util";
-import { sendVerificationEmail } from "../services/email.service";
 import { StatusCodes } from "http-status-codes";
-import { createAccessToken, createRefreshToken, createEmailVerificationToken } from "../utils/jwt.util";
+import * as authService from "../services/auth.service";
+
+// Cookie options for refresh token
+const refreshTokenCookieOptions = {
+  httpOnly: true,
+  maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  secure: true,
+};
 
 export const register = async (
   req: Request,
@@ -22,47 +19,24 @@ export const register = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { username, email, password }: RegisterRequest = req.body;
+    const userData: RegisterRequest = req.body;
 
-    // Create user
-    const user = await createUser({
-      username,
-      email,
-      password,
-    });
+    const result = await authService.register(userData);
 
-    // Generate JWT token
-    const accessToken = createAccessToken(user.id);
-    const refreshToken = createRefreshToken(user.id);
-    const verificationToken = createEmailVerificationToken(user.id);
-
-    await addRefreshToken(user.id, refreshToken);
-
-    logger.info(`User registered successfully: ${user.id}`);
-
-    await sendVerificationEmail(email, verificationToken, username);
-
-    res.cookie("jwt", refreshToken, {
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      secure: true,
-    });
+    // Set refresh token as httpOnly cookie
+    res.cookie("jwt", result.refreshToken, refreshTokenCookieOptions);
 
     const response: ApiResponse<AuthResponse> = {
       status: "success",
       data: {
-        userId: user.id,
-        accessToken,
+        userId: result.userId,
+        accessToken: result.accessToken,
       },
     };
 
     res.status(201).json(response);
   } catch (error) {
-    if (error instanceof AppError) {
-      next(error);
-      return;
-    }
-    next(new AppError("Error during registration", StatusCodes.INTERNAL_SERVER_ERROR, ErrorCode.SERVER_ERROR));
+    next(error);
   }
 };
 
@@ -72,76 +46,32 @@ export const login = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { email, password }: LoginRequest = req.body;
-    const cookies = req.cookies;
-    // Get user by email
-    const user = await getUserByEmail(email);
-    if (!user) {
-      throw new AppError(
-        "Invalid email or password",
-        StatusCodes.UNAUTHORIZED,
-        ErrorCode.INVALID_CREDENTIALS
-      );
+    const credentials: LoginRequest = req.body;
+    const existingRefreshToken = req.cookies?.jwt;
+
+    const result = await authService.login(credentials, existingRefreshToken);
+
+    // Clear existing cookie first
+    if (existingRefreshToken) {
+      res.clearCookie("jwt", refreshTokenCookieOptions);
     }
 
-    // Verify password
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      throw new AppError(
-        "Invalid email or password",
-        StatusCodes.UNAUTHORIZED,
-        ErrorCode.INVALID_CREDENTIALS
-      );
-    }
-
-    const accessToken = createAccessToken(user.id);
-    const refreshToken = createRefreshToken(user.id);
-
-    if (cookies?.jwt) {
-      const tokenUser = await getUserByRefreshToken(cookies.jwt);
-      if (!tokenUser) {
-        await removeAllRefreshTokens(user.id);
-      } else {
-        await removeRefreshToken(user.id, cookies.jwt);
-      }
-
-      res.clearCookie("jwt", {
-        httpOnly: true,
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        secure: true,
-      });
-    }
-
-    await addRefreshToken(user.id, refreshToken);
-
-    logger.info(`User logged in successfully: ${user.id}`);
-
-    res.cookie("jwt", refreshToken, {
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      secure: true,
-    });
+    // Set new refresh token as httpOnly cookie
+    res.cookie("jwt", result.refreshToken, refreshTokenCookieOptions);
 
     const response: ApiResponse<AuthResponse> = {
       status: "success",
       data: {
-        userId: user.id,
-        accessToken,
+        userId: result.userId,
+        accessToken: result.accessToken,
       },
     };
 
     res.status(200).json(response);
   } catch (error) {
-    if (error instanceof AppError) {
-      next(error);
-      return;
-    }
-    next(new AppError("Error during login", StatusCodes.INTERNAL_SERVER_ERROR, ErrorCode.SERVER_ERROR));
+    next(error);
   }
 };
-
-
-
 
 export const logout = async (
   req: Request,
@@ -149,102 +79,49 @@ export const logout = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const cookies = req.cookies;
+    const refreshToken = req.cookies?.jwt;
 
-    if (!cookies?.jwt){
-        res.sendStatus(204);
-        return;
+    await authService.logout(refreshToken);
+
+    // Clear the cookie
+    if (refreshToken) {
+      res.clearCookie("jwt", refreshTokenCookieOptions);
     }
-
-    const refreshToken = cookies.jwt;
-
-    const foundUser = await getUserByRefreshToken(refreshToken);
-    if(!foundUser){
-      res.clearCookie("jwt", {
-        httpOnly: true,
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        secure: true,
-      });
-       res.sendStatus(204);
-       return;
-    }
-
-    await removeRefreshToken(foundUser.id, refreshToken);
-    res.clearCookie("jwt", {
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      secure: true,
-    });
-    
-    logger.info(`User logged out successfully: ${foundUser.id}`);
 
     res.sendStatus(204);
-    return;
-
-    
   } catch (error) {
-    if (error instanceof AppError) {
-      next(error);
-      return;
-    }
-    next(new AppError("Error during logout", StatusCodes.INTERNAL_SERVER_ERROR, ErrorCode.SERVER_ERROR));
+    next(error);
   }
 };
 
-
-
-
-
-export const getAuthStatus = async (
+export const refresh = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = req.user?.userId;
-    
-    if (!userId) {
-      const response: ApiResponse<AuthStatusResponse> = {
-        status: "success",
-        data: {
-          isAuthenticated: false
-        }
-      };
-      res.status(200).json(response);
-      return;
-    }
+    // Token validation is handled by middleware
+    const refreshToken = req.refreshToken!; // Guaranteed to exist due to middleware
+    const userId = req.user!.userId; // Guaranteed to exist due to middleware
 
-    const user = await getUserById(userId);
-    if (!user) {
-      const response: ApiResponse<AuthStatusResponse> = {
-        status: "success",
-        data: {
-          isAuthenticated: false
-        }
-      };
-      res.status(200).json(response);
-      return;
-    }
+    // Clear existing cookie
+    res.clearCookie("jwt", refreshTokenCookieOptions);
 
-    const response: ApiResponse<AuthStatusResponse> = {
+    const result = await authService.refreshTokens(refreshToken, userId);
+
+    // Set new refresh token as httpOnly cookie
+    res.cookie("jwt", result.refreshToken, refreshTokenCookieOptions);
+
+    const response: ApiResponse<AuthResponse> = {
       status: "success",
       data: {
-        isAuthenticated: true,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          isVerified: user.isVerified
-        }
-      }
+        userId: result.userId,
+        accessToken: result.accessToken,
+      },
     };
 
     res.status(200).json(response);
   } catch (error) {
-    if (error instanceof AppError) {
-      next(error);
-      return;
-    }
-    next(new AppError("Error checking auth status", StatusCodes.INTERNAL_SERVER_ERROR, ErrorCode.SERVER_ERROR));
+    next(error);
   }
 };

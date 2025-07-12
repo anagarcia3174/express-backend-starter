@@ -24,7 +24,7 @@ export const sendVerificationEmail = async (
     
     const templatePath = path.join(
       __dirname,
-      "views/emails/verification.ejs"
+      "../views/email/verification.ejs"
     );
 
     let template;
@@ -78,7 +78,7 @@ export const sendPasswordResetEmail = async (
     
     const templatePath = path.join(
       __dirname,
-      "views/emails/password-reset.ejs"
+      "../views/password/password-reset.ejs"
     );
 
     let template;

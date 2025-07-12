@@ -3,9 +3,7 @@ import { config } from "./config/config";
 import cors from "cors";
 import { errorHandler } from "./middleware/error-handler.middleware";
 import authRoutes from "./routes/auth.route";
-import emailRoutes from "./routes/email.route";
-import passwordRoutes from "./routes/password.route";
-import tokenRoutes from "./routes/token.route";
+import accountRoutes from "./routes/account.route";
 import cookieParser from "cookie-parser";
 import path from "path";
 import AppError, { ErrorCode } from "./utils/app-error.util";
@@ -36,9 +34,8 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/email", emailRoutes);
-app.use("/api/password", passwordRoutes);
-app.use("/api/token", tokenRoutes);
+app.use("/api/account", accountRoutes);
+
 
 app.use((req, res, next) => {
   next(new AppError(

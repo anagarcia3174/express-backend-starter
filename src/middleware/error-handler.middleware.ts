@@ -28,27 +28,27 @@ export const errorHandler: ErrorRequestHandler = (
     };
 
     res.status(err.statusCode).json(response);
+  } else {
+    // Log unexpected errors at error level with full context
+    logger.error(`Unexpected error occurred: ${err.message}`, {
+      error: err,
+      stack: err.stack,
+      path: req.path,
+      method: req.method,
+      userId: req.user?.userId,
+      body: req.body,
+      query: req.query,
+      params: req.params
+    });
+
+    const response: ApiResponse = {
+      status: "error",
+      error: {
+        message: "Internal server error",
+        code: "server-error",
+      },
+    };
+
+    res.status(500).json(response);
   }
-
-  // Log unexpected errors at error level with full context
-  logger.error(`Unexpected error occurred: ${err.message}`, {
-    error: err,
-    stack: err.stack,
-    path: req.path,
-    method: req.method,
-    userId: req.user?.userId,
-    body: req.body,
-    query: req.query,
-    params: req.params
-  });
-
-  const response: ApiResponse = {
-    status: "error",
-    error: {
-      message: "Internal server error",
-      code: "server-error",
-    },
-  };
-
-  res.status(500).json(response);
 };
