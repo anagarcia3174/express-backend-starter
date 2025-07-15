@@ -2,7 +2,7 @@ import { createLogger, format, transports } from "winston";
 import { config } from '../config/config';
 const { combine, timestamp, printf, colorize, errors } = format;
 
-const customFormat = printf(({ level, message, timestamp, stack }) => {
+export const customFormat = printf(({ level, message, timestamp, stack }) => {
   return `${timestamp} ${level}: ${stack || message}`;
 });
 
