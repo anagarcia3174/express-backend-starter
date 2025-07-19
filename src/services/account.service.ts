@@ -1,3 +1,5 @@
+
+
 import {
   updateVerificationStatus,
   getUserById,
@@ -145,11 +147,8 @@ export const changePassword = async (
       );
     }
 
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
     // Update password
-    await updateUserPassword(userId, hashedPassword);
+    await updateUserPassword(userId, newPassword);
 
     // Remove all refresh tokens to force re-login on all devices
     await removeAllRefreshTokens(userId);

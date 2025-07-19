@@ -1,9 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { RegisterRequest, LoginRequest } from "../types/user.types";
 import { ApiResponse, AuthResponse } from "../types/api.types";
-import { logger } from "../utils/logger.util";
-import AppError, { ErrorCode } from "../utils/app-error.util";
-import { StatusCodes } from "http-status-codes";
 import * as authService from "../services/auth.service";
 
 // Cookie options for refresh token

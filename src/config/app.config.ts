@@ -25,7 +25,7 @@ interface Config {
   clientUrl: string;
 }
 
-export const config: Config = {
+export const appConfig: Config = {
   port: env.PORT,
   nodeEnv: env.NODE_ENV,
   accessTokenSecret: env.ACCESS_TOKEN_SECRET,

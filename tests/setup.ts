@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
-import { mongoConfig } from "../src/config/mongo.config";
+import { mongoConfig } from "../src/config";
+
+
 
 export const setupTestDB = () => {
   beforeAll(async () => {
-    await mongoose.connect(mongoConfig.testUrl);
+    await mongoose.connect(mongoConfig.url);
   });
 
   beforeEach(async () => {
@@ -14,3 +16,5 @@ export const setupTestDB = () => {
     await mongoose.disconnect();
   });
 };
+
+

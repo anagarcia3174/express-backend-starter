@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 describe('AppError Utility', () => {
   describe('AppError Class', () => {
-    test('should create AppError with message, statusCode, and errorCode', () => {
+    it('should create AppError with message, statusCode, and errorCode', () => {
       // TODO: Implement test
       const error = new AppError('test', StatusCodes.BAD_REQUEST, ErrorCode.SERVER_ERROR);
       expect(error).toBeInstanceOf(AppError);
@@ -12,7 +12,7 @@ describe('AppError Utility', () => {
       expect(error.code).toBe(ErrorCode.SERVER_ERROR);
     });
 
-    test('should extend Error class', () => {
+    it('should extend Error class', () => {
       // TODO: Implement test
       const error = new AppError('test', StatusCodes.BAD_REQUEST, ErrorCode.SERVER_ERROR);
       expect(error).toBeInstanceOf(Error);
@@ -23,7 +23,7 @@ describe('AppError Utility', () => {
   });
 
   describe('ErrorCode Enum', () => {
-    test('should contain all expected error codes', () => {
+    it('should contain all expected error codes', () => {
       // TODO: Implement test
       expect(ErrorCode).toBeDefined();
       expect(Object.values(ErrorCode).length).toBe(21);

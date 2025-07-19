@@ -2,6 +2,7 @@ import { sendEmail } from '../../../src/utils/mailer.util';
 import AppError, { ErrorCode } from '../../../src/utils/app-error.util';
 import { StatusCodes } from 'http-status-codes';
 import * as nodemailer from 'nodemailer';
+import { emailConfig } from '../../../src/config';
 
 // Mock nodemailer
 jest.mock('nodemailer');
@@ -13,21 +14,6 @@ mockCreateTransport.mockReturnValue({
   sendMail: mockSendMail,
 });
 
-// Mock AWS SES config
-jest.mock('../../../src/config/aws.config', () => ({
-  ses: {
-    sesClient: 'mock-ses-client',
-  },
-}));
-
-// Mock email config
-jest.mock('../../../src/config/email.config', () => ({
-  emailConfig: {
-    from: 'test@example.com',
-    verificationLink: 'https://example.com/verify',
-    resetLink: 'https://example.com/reset',
-  },
-}));
 
 describe('Mailer Utility - sendEmail', () => {
   const baseEmailOptions = {
@@ -53,7 +39,7 @@ describe('Mailer Utility - sendEmail', () => {
           to: baseEmailOptions.to,
           subject: baseEmailOptions.subject,
           html: baseEmailOptions.template,
-          from: 'test@example.com', // Should use default from emailConfig
+          from: emailConfig.from, // Should use default from emailConfig
         });
       });
 
@@ -87,7 +73,7 @@ describe('Mailer Utility - sendEmail', () => {
 
       // Assert
       expect(mockSendMail).toHaveBeenCalledWith({
-        from: 'test@example.com', // Should use default from emailConfig
+        from: emailConfig.from, // Should use default from emailConfig
         to: baseEmailOptions.to,
         subject: baseEmailOptions.subject,
         html: baseEmailOptions.template,

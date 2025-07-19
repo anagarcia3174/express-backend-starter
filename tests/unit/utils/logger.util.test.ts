@@ -1,12 +1,10 @@
 import { customFormat, logger } from '../../../src/utils/logger.util';
-import { config } from '../../../src/config/config';
 import fs from 'fs';
-import path from 'path';
 import { TransformableInfo } from 'logform';
 
 // Mock the config
-jest.mock('../../../src/config/config', () => ({
-  config: {
+jest.mock('../../../src/config', () => ({
+  appConfig: {
     nodeEnv: 'test'
   }
 }));
@@ -29,7 +27,7 @@ describe('Logger Utility', () => {
   });
 
   describe('Logger Configuration', () => {
-    test('should have correct log level based on environment', () => {
+    it('should have correct log level based on environment', () => {
       // The logger should have debug level since we mocked nodeEnv as 'test'
       // (which is not 'production', so it defaults to 'debug')
       expect(logger.level).toBe('debug');
@@ -42,13 +40,13 @@ describe('Logger Utility', () => {
       expect(getLogLevel('test')).toBe('debug');
     });
 
-    test('should have console transport configured', () => {
+    it('should have console transport configured', () => {
       const transports = logger.transports;
       const consoleTransport = transports.find(t => t.constructor.name === 'Console');
       expect(consoleTransport).toBeDefined();
     });
 
-    test('should have file transports configured', () => {
+    it('should have file transports configured', () => {
       const transports = logger.transports;
       const fileTransports = transports.filter(t => t.constructor.name === 'File');
       expect(fileTransports).toHaveLength(2);
@@ -64,12 +62,12 @@ describe('Logger Utility', () => {
       expect((combinedTransport as any).level ?? 'debug').not.toBe('error');
     });
 
-    test('should have correct format configuration', () => {
+    it('should have correct format configuration', () => {
       expect(logger.format).toBeDefined();
       expect(logger.exitOnError).toBe(false);
     });
 
-    test('customFormat should use stack if available', () => {
+    it('customFormat should use stack if available', () => {
       // Test the printf format function directly
       const logInfo = {
         level: 'error',
@@ -85,7 +83,7 @@ describe('Logger Utility', () => {
       expect(formatted).toBe('2025-07-14 12:00:00 error: Error: Something went wrong\n    at line...');
     });
     
-    test('customFormat should fallback to message if stack is missing', () => {
+    it('customFormat should fallback to message if stack is missing', () => {
       // Test the printf format function directly
       const logInfo = {
         level: 'info',
@@ -102,7 +100,7 @@ describe('Logger Utility', () => {
   });
 
   describe('Logger Methods', () => {
-    test('should log info messages', () => {
+    it('should log info messages', () => {
       const logSpy = jest.spyOn(logger, 'info');
       const testMessage = 'Test info message';
       
@@ -112,7 +110,7 @@ describe('Logger Utility', () => {
       logSpy.mockRestore();
     });
 
-    test('should log error messages', () => {
+    it('should log error messages', () => {
       const logSpy = jest.spyOn(logger, 'error');
       const testMessage = 'Test error message';
       
@@ -122,7 +120,7 @@ describe('Logger Utility', () => {
       logSpy.mockRestore();
     });
 
-    test('should log debug messages', () => {
+    it('should log debug messages', () => {
       const logSpy = jest.spyOn(logger, 'debug');
       const testMessage = 'Test debug message';
       
@@ -132,7 +130,7 @@ describe('Logger Utility', () => {
       logSpy.mockRestore();
     });
 
-    test('should log warn messages', () => {
+    it('should log warn messages', () => {
       const logSpy = jest.spyOn(logger, 'warn');
       const testMessage = 'Test warn message';
       
@@ -142,7 +140,7 @@ describe('Logger Utility', () => {
       logSpy.mockRestore();
     });
 
-    test('should handle log messages with metadata', () => {
+    it('should handle log messages with metadata', () => {
       const logSpy = jest.spyOn(logger, 'info');
       const testMessage = 'Test message with metadata';
       const metadata = { userId: '123', action: 'login' };
@@ -153,7 +151,7 @@ describe('Logger Utility', () => {
       logSpy.mockRestore();
     });
 
-    test('should handle error objects with stack traces', () => {
+    it('should handle error objects with stack traces', () => {
       const logSpy = jest.spyOn(logger, 'error');
       const testError = new Error('Test error');
       
@@ -171,7 +169,7 @@ describe('Logger Utility', () => {
       mockFs.mkdirSync.mockReturnValue(undefined);
     });
 
-    test('should write to log files', async () => {
+    it('should write to log files', async () => {
       const logMessage = 'Test log message';
       
       
@@ -189,7 +187,7 @@ describe('Logger Utility', () => {
       expect(logger.transports.length).toBeGreaterThan(0);
     });
 
-    test('should separate error logs from combined logs', () => {
+    it('should separate error logs from combined logs', () => {
       const transports = logger.transports;
       
       // Find error transport

@@ -1,5 +1,5 @@
 import { createLogger, format, transports } from "winston";
-import { config } from '../config/config';
+import { appConfig } from '../config';
 const { combine, timestamp, printf, colorize, errors } = format;
 
 export const customFormat = printf(({ level, message, timestamp, stack }) => {
@@ -7,7 +7,7 @@ export const customFormat = printf(({ level, message, timestamp, stack }) => {
 });
 
 export const logger = createLogger({
-  level: config.nodeEnv === "production" ? "info" : "debug",
+  level: appConfig.nodeEnv === "production" ? "info" : "debug",
   format: combine(
     colorize(),
     timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),

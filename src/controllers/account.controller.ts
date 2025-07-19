@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { ApiResponse } from "../types/api.types";
-import { logger } from "../utils/logger.util";
 import AppError, { ErrorCode } from "../utils/app-error.util";
 import { StatusCodes } from "http-status-codes";
 import * as accountService from "../services/account.service";

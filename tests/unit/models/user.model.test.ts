@@ -2,12 +2,13 @@ import { faker } from '@faker-js/faker';
 import { IUserDocument, UserModel } from '../../../src/models/user.model';
 import { setupTestDB } from '../../setup';
 
+
 describe('User model', () => {
   setupTestDB();
 
   // Helper function to create valid user data
   const createValidUserData = (overrides: Partial<IUserDocument> = {}) => ({
-    username: faker.internet.displayName(),
+    username: faker.internet.username(),
     email: faker.internet.email().toLowerCase(),
     password: faker.internet.password({ length: 8 }),
     ...overrides,

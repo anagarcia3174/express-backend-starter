@@ -1,5 +1,5 @@
 import path from "path";
-import { emailConfig } from "../config/email.config";
+import { emailConfig } from "../config";
 import { sendEmail } from "../utils/mailer.util";
 import ejs from "ejs";
 import { logger } from "../utils/logger.util";

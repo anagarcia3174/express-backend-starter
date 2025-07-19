@@ -1,8 +1,7 @@
 import nodemailer from "nodemailer";
-import { ses } from "../config/aws.config";
 import AppError, { ErrorCode } from "./app-error.util";
 import { StatusCodes } from "http-status-codes";
-import { emailConfig } from "../config/email.config";
+import { emailConfig, ses } from "../config";
 
 interface SendEmailOptions {
   to: string;

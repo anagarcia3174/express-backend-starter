@@ -102,13 +102,12 @@ export const updateUserPassword = async (
   userId: string,
   newPassword: string
 ): Promise<void> => {
-  const user = await UserModel.findByIdAndUpdate(
-    userId,
-    { password: newPassword },
-    { new: true }
-  );
+  const user = await UserModel.findById(userId);
   if (!user) {
     throw new AppError("User not found.", StatusCodes.NOT_FOUND,ErrorCode.NO_USER);
   }
+  
+  user.password = newPassword;
+  await user.save();
   return;
 };

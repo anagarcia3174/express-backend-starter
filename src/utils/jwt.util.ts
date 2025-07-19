@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { config } from '../config/config';
+import { appConfig } from '../config';
 
 export interface TokenInterface {
   userId: string;
@@ -28,19 +28,19 @@ const createToken = (
 };
 
 export const createAccessToken = (userId: string): string => {
-  return createToken(userId, config.accessTokenSecret, 24 * 60 * 60);
+  return createToken(userId, appConfig.accessTokenSecret, 24 * 60 * 60);
 }
 
 export const createRefreshToken = (userId: string): string => {
-  return createToken(userId, config.refreshTokenSecret, 30 * 24 * 60 * 60);
+  return createToken(userId, appConfig.refreshTokenSecret, 30 * 24 * 60 * 60);
 }
 
 export const createEmailVerificationToken = (userId: string): string => {
-  return createToken(userId, config.emailVerificationTokenSecret, 15 * 60);
+  return createToken(userId, appConfig.emailVerificationTokenSecret, 15 * 60);
 }
 
 export const createPasswordResetToken = (userId: string): string => {
-  return createToken(userId, config.resetPasswordTokenSecret, 30 * 60);
+  return createToken(userId, appConfig.resetPasswordTokenSecret, 30 * 60);
 }
 /**
  * Verifies and decodes a JWT token
@@ -78,7 +78,7 @@ export const verifyToken = (token: string, secret: string): TokenVerificationRes
  * @returns TokenVerificationResult containing verification status and payload
  */
 export const verifyAccessToken = (token: string): TokenVerificationResult => {
-  return verifyToken(token, config.accessTokenSecret);
+  return verifyToken(token, appConfig.accessTokenSecret);
 };
 
 /**
@@ -87,7 +87,7 @@ export const verifyAccessToken = (token: string): TokenVerificationResult => {
  * @returns TokenVerificationResult containing verification status and payload
  */
 export const verifyRefreshToken = (token: string): TokenVerificationResult => {
-  return verifyToken(token, config.refreshTokenSecret);
+  return verifyToken(token, appConfig.refreshTokenSecret);
 };
 
 /**
@@ -96,7 +96,7 @@ export const verifyRefreshToken = (token: string): TokenVerificationResult => {
  * @returns TokenVerificationResult containing verification status and payload
  */
 export const verifyEmailVerificationToken = (token: string): TokenVerificationResult => {
-  return verifyToken(token, config.emailVerificationTokenSecret);
+  return verifyToken(token, appConfig.emailVerificationTokenSecret);
 };
 
 /**
@@ -105,7 +105,7 @@ export const verifyEmailVerificationToken = (token: string): TokenVerificationRe
  * @returns TokenVerificationResult containing verification status and payload
  */
 export const verifyPasswordResetToken = (token: string): TokenVerificationResult => {
-  return verifyToken(token, config.resetPasswordTokenSecret);
+  return verifyToken(token, appConfig.resetPasswordTokenSecret);
 };
 
 export const createAuthTokens = (userId: string) => {

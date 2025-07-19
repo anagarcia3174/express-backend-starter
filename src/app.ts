@@ -1,5 +1,5 @@
 import express from "express";
-import { config } from "./config/config";
+import { appConfig } from "./config";
 import cors from "cors";
 import { errorHandler } from "./middleware/error-handler.middleware";
 import authRoutes from "./routes/auth.route";
@@ -12,7 +12,7 @@ import { StatusCodes } from "http-status-codes";
 
 
 const app = express();
-const port = config.port || 3000;
+const port = appConfig.port || 3000;
 
 
 app.use(express.json({ limit: "10kb" }));
@@ -25,7 +25,7 @@ app.set("views", path.join(__dirname, "views"));
 app.use(
   cors({
     credentials: true,
-    origin: config.clientUrl || "http://localhost:3000",
+    origin: appConfig.clientUrl || "http://localhost:3000",
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })

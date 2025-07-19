@@ -3,7 +3,6 @@ node_modules/
 
 # Environment Variables
 .env
-.env.*  # Ignore all env files like .env.local, .env.production, etc.
 
 # Logs
 logs/

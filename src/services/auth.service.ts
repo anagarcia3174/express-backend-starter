@@ -12,7 +12,6 @@ import {
   createEmailVerificationToken 
 } from "../utils/jwt.util";
 import { RegisterRequest, LoginRequest } from "../types/user.types";
-import { AuthResponse, AuthStatusResponse, UserResponse } from "../types/api.types";
 import { logger } from "../utils/logger.util";
 import AppError, { ErrorCode } from "../utils/app-error.util";
 import { StatusCodes } from "http-status-codes";
